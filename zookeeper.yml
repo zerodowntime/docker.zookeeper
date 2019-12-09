@@ -1,0 +1,156 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: zookeeper-super-pass
+type: Opaque
+data:
+  username: c3VwZXI=
+  password: c3VwZXJwd2Q=
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: zookeeper
+  namespace: default
+  labels:
+    app: zk
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: view-statefulsets
+  namespace: default
+rules:
+  - apiGroups: ["apps"]
+    resources: ["statefulsets"]
+    verbs: ["list", "get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: view-statefulsets-by-sa
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: view-statefulsets
+subjects:
+  - kind: ServiceAccount
+    name: zookeeper
+    namespace: default
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zk-hs
+  labels:
+    app: zk
+spec:
+  ports:
+  - port: 2888
+    name: server
+  - port: 3888
+    name: leader-election
+  clusterIP: None
+  selector:
+    app: zk
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zk-cs
+  labels:
+    app: zk
+spec:
+  ports:
+  - port: 2181
+    name: client
+  selector:
+    app: zk
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: zk-pdb
+spec:
+  selector:
+    matchLabels:
+      app: zk
+  maxUnavailable: 3
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: zk
+spec:
+  selector:
+    matchLabels:
+      app: zk
+  serviceName: zk-hs
+  replicas: 7
+  updateStrategy:
+    type: RollingUpdate
+  podManagementPolicy: OrderedReady
+  template:
+    metadata:
+      labels:
+        app: zk
+    spec:
+      serviceAccountName: zookeeper
+      containers:
+      - name: kubernetes-zookeeper
+        imagePullPolicy: Never
+        image: "zookeeper"
+        resources:
+          requests:
+            memory: "100Mi"
+            cpu: "0.1"
+        lifecycle:
+          postStart:
+            exec:
+              command: ["/opt/post-start.sh"]
+          preStop:
+            exec:
+              command: ["/opt/pre-stop.sh"]
+        ports:
+        - containerPort: 2181
+          name: client
+        - containerPort: 2888
+          name: server
+        - containerPort: 3888
+          name: leader-election
+        volumeMounts:
+        - name: datadir
+          mountPath: /var/lib/zookeeper
+        - name: zookeeper-super
+          mountPath: /etc/zookeeper-super
+        command:
+          - "/docker-entrypoint.sh"
+        readinessProbe:
+          exec:
+            command:
+              - "/opt/readiness-probe.sh"
+          initialDelaySeconds: 30
+          timeoutSeconds: 10
+        livenessProbe:
+          exec:
+            command:
+              - "/opt/liveness-probe.sh"
+          initialDelaySeconds: 60
+          timeoutSeconds: 10
+      # securityContext:
+      #   runAsUser: 1000
+      #   fsGroup: 1000
+      volumes:
+        - name: zookeeper-super
+          secret:
+            secretName: zookeeper-super-pass
+            defaultMode: 0400
+  volumeClaimTemplates:
+  - metadata:
+      name: datadir
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 200Mi
