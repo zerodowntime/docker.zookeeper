@@ -1,0 +1,6 @@
+[template]
+src = "zoo.cfg"
+dest = "/opt/zookeeper/conf/zoo.cfg"
+keys = [
+  "/zookeeper",
+]
