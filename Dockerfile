@@ -5,7 +5,8 @@
 FROM zerodowntime/openjdk:1.8.0-centos7
 
 RUN curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o /usr/local/bin/jq \
-	&& chmod +x /usr/local/bin/jq
+	&& chmod +x /usr/local/bin/jq \
+	&& yum install -y nc
 
 ARG ZOOKEEPER_VERSION
 
