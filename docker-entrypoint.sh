@@ -52,7 +52,14 @@ curl -s -o "$JSONFILE" \
      --header "Authorization: Bearer $BEARER_TOKEN" \
      "https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT/apis/apps/v1/namespaces/$METADATA_NAMESPACE/statefulsets/$STATEFULSET_NAME"
 
-export SERVERS=$(cat $JSONFILE | jq '.spec.replicas')
+#export SERVERS=$(cat $JSONFILE | jq '.spec.replicas')
+
+re='^[0-9]+$'
+if ! [[ $SERVERS =~ $re ]] ; then
+    export SERVERS="$MY_ID"
+fi
+
+echo $SERVERS
 
 # confd
 confd -onetime -log-level debug || exit 1

@@ -16,10 +16,8 @@ else
     exit 1
 fi
 
-# get and set id
+# get id
 export MY_ID=$((ORD+1))
-ID_FILE="$DATA_DIR/myid"
-echo $MY_ID > $ID_FILE
 
 # the meat: remove server from cluster
 for ((ID=0; ID<=MY_ID; ID++))

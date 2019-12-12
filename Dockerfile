@@ -34,7 +34,6 @@ VOLUME ["/var/lib/zookeeper", "/var/log/zookeeper"]
 # 2888: server port
 EXPOSE 2181 2888 3888
 
-#COPY start-zookeeper.sh /opt/zookeeper/bin/start-zookeeper
 COPY confd/ /etc/confd
 COPY docker-entrypoint.sh /
 
@@ -42,7 +41,5 @@ COPY post-start.sh /opt/
 COPY pre-stop.sh /opt/
 COPY liveness-probe.sh /opt/
 COPY readiness-probe.sh /opt/
-
-COPY --chown=zookeeper zoo.cfg /opt/zookeeper/conf/
 
 ENTRYPOINT ["/docker-entrypoint.sh"]

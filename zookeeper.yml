@@ -76,7 +76,7 @@ spec:
   selector:
     matchLabels:
       app: zk
-  maxUnavailable: 3
+  maxUnavailable: 1
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -87,7 +87,7 @@ spec:
     matchLabels:
       app: zk
   serviceName: zk-hs
-  replicas: 7
+  replicas: 3
   updateStrategy:
     type: RollingUpdate
   podManagementPolicy: OrderedReady

@@ -16,36 +16,35 @@ else
     exit 1
 fi
 
-# get and set id
+# get id
 export MY_ID=$((ORD+1))
-ID_FILE="$DATA_DIR/myid"
-echo $MY_ID > $ID_FILE
-
-# get number of servers
-METADATA_NAMESPACE=$(cat /run/secrets/kubernetes.io/serviceaccount/namespace)
-BEARER_TOKEN=$(cat /run/secrets/kubernetes.io/serviceaccount/token)
-STATEFULSET_NAME="${HOSTNAME%-*}"
-POD_ORDINAL="${HOSTNAME##*-}"
-
-JSONFILE="$(mktemp)"
-curl -s -o "$JSONFILE" \
-     --cacert "/run/secrets/kubernetes.io/serviceaccount/ca.crt" \
-     --header "Authorization: Bearer $BEARER_TOKEN" \
-     "https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT/apis/apps/v1/namespaces/$METADATA_NAMESPACE/statefulsets/$STATEFULSET_NAME"
-
-export SERVERS=$(cat $JSONFILE | jq '.spec.replicas')
 
 # the meat: add server to the cluster
 # targeted for statefulset - try to add to ids lower than my own
 # prevents creating separate clusters
-for ((ID=0; ID<=MY_ID; ID++))
+for ((ID=0; ID<MY_ID; ID++))
 do
+    echo "Trying $NAME-$ID.$DOMAIN..."
+    sleep 1
     /opt/zookeeper/bin/zkCli.sh -server $NAME-$ID.$DOMAIN:$CLIENT_PORT <<EOF
 addauth digest super:superpwd
 reconfig -add $MY_ID=$NAME-$ORD.$DOMAIN:$SERVER_PORT:$ELECTION_PORT:participant;$CLIENT_PORT
 quit
 EOF
     if [ $? -eq "0" ]; then
+	echo "Done"
+	break
+    fi
+    echo "Connection broken"
+    echo "Trying again..."
+    sleep 1
+    /opt/zookeeper/bin/zkCli.sh -server $NAME-$ID.$DOMAIN:$CLIENT_PORT <<EOF
+addauth digest super:superpwd
+reconfig -add $MY_ID=$NAME-$ORD.$DOMAIN:$SERVER_PORT:$ELECTION_PORT:participant;$CLIENT_PORT
+quit
+EOF
+    if [ $? -eq "0" ]; then
+	echo "Done"
 	break
     fi
 done
