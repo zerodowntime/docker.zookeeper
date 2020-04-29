@@ -11,9 +11,9 @@ RUN curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -
 ARG ZOOKEEPER_VERSION
 
 # Get zookeeper
-RUN curl -L https://www.apache.org/dist/zookeeper/zookeeper-$ZOOKEEPER_VERSION/apache-zookeeper-$ZOOKEEPER_VERSION-bin.tar.gz \
+RUN curl -L https://archive.apache.org/dist/zookeeper/zookeeper-$ZOOKEEPER_VERSION/apache-zookeeper-$ZOOKEEPER_VERSION-bin.tar.gz \
 	-o /opt/apache-zookeeper-$ZOOKEEPER_VERSION-bin.tar.gz \
-	&& curl -L https://www.apache.org/dist/zookeeper/zookeeper-$ZOOKEEPER_VERSION/apache-zookeeper-$ZOOKEEPER_VERSION-bin.tar.gz.sha512 \
+	&& curl -L https://archive.apache.org/dist/zookeeper/zookeeper-$ZOOKEEPER_VERSION/apache-zookeeper-$ZOOKEEPER_VERSION-bin.tar.gz.sha512 \
 	-o /opt/apache-zookeeper-$ZOOKEEPER_VERSION-bin.tar.gz.sha512 \
 	&& cd /opt \
 	&& sha512sum apache-zookeeper-$ZOOKEEPER_VERSION-bin.tar.gz \
