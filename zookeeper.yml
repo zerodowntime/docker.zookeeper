@@ -100,7 +100,7 @@ spec:
       containers:
       - name: kubernetes-zookeeper
         imagePullPolicy: Never
-        image: "zookeeper"
+        image: "zerodowntime/zookeeper"
         resources:
           requests:
             memory: "100Mi"
