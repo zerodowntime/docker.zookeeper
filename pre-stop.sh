@@ -6,6 +6,8 @@ export DATA_DIR="/var/lib/zookeeper/data"
 export CLIENT_PORT=2181
 export SERVER_PORT=2888
 export ELECTION_PORT=3888
+export ZK_SUPERUSER=$(cat /etc/zookeeper-super/username)
+export ZK_SUPERPASS=$(cat /etc/zookeeker-super/password)
 
 # cut hostname from stateful set into name and ordinal
 if [[ $HOST =~ (.*)-([0-9]+)$ ]]; then
@@ -23,7 +25,7 @@ export MY_ID=$((ORD+1))
 for ((ID=0; ID<=MY_ID; ID++))
 do
     /opt/zookeeper/bin/zkCli.sh -server $NAME-$ID.$DOMAIN:$CLIENT_PORT <<EOF
-addauth digest super:superpwd
+addauth digest $ZK_SUPERUSER:$ZK_SUPERPASS
 reconfig -remove $MY_ID
 quit
 EOF

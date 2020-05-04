@@ -6,6 +6,8 @@ export DATA_DIR="/var/lib/zookeeper/data"
 export CLIENT_PORT=2181
 export SERVER_PORT=2888
 export ELECTION_PORT=3888
+export ZK_SUPERUSER=$(cat /etc/zookeeper-super/username)
+export ZK_SUPERPASS=$(cat /etc/zookeeker-super/password)
 
 # cut hostname from stateful set into name and ordinal
 if [[ $HOST =~ (.*)-([0-9]+)$ ]]; then
