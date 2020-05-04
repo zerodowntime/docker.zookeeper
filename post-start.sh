@@ -7,7 +7,7 @@ export CLIENT_PORT=2181
 export SERVER_PORT=2888
 export ELECTION_PORT=3888
 export ZK_SUPERUSER=$(cat /etc/zookeeper-super/username)
-export ZK_SUPERPASS=$(cat /etc/zookeeker-super/password)
+export ZK_SUPERPASS=$(cat /etc/zookeeper-super/password)
 
 # cut hostname from stateful set into name and ordinal
 if [[ $HOST =~ (.*)-([0-9]+)$ ]]; then
@@ -29,7 +29,7 @@ do
     echo "Trying $NAME-$ID.$DOMAIN..."
     sleep 1
     /opt/zookeeper/bin/zkCli.sh -server $NAME-$ID.$DOMAIN:$CLIENT_PORT <<EOF
-addauth digest super:superpwd
+addauth digest $ZK_SUPERUSER:$ZK_SUPERPASS
 reconfig -add $MY_ID=$NAME-$ORD.$DOMAIN:$SERVER_PORT:$ELECTION_PORT:participant;$CLIENT_PORT
 quit
 EOF
@@ -41,7 +41,7 @@ EOF
     echo "Trying again..."
     sleep 1
     /opt/zookeeper/bin/zkCli.sh -server $NAME-$ID.$DOMAIN:$CLIENT_PORT <<EOF
-addauth digest super:superpwd
+addauth digest $ZK_SUPERUSER:$ZK_SUPERPASS
 reconfig -add $MY_ID=$NAME-$ORD.$DOMAIN:$SERVER_PORT:$ELECTION_PORT:participant;$CLIENT_PORT
 quit
 EOF
