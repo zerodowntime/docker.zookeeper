@@ -24,29 +24,34 @@ export MY_ID=$((ORD+1))
 # the meat: add server to the cluster
 # targeted for statefulset - try to add to ids lower than my own
 # prevents creating separate clusters
-for ((ID=0; ID<MY_ID; ID++))
-do
-    echo "Trying $NAME-$ID.$DOMAIN..."
-    sleep 1
-    /opt/zookeeper/bin/zkCli.sh -server $NAME-$ID.$DOMAIN:$CLIENT_PORT <<EOF
+echo "Checking if any pod is up..."
+curl "$DOMAIN:2181"
+
+echo "Trying $DOMAIN..."
+sleep 1
+
+/opt/zookeeper/bin/zkCli.sh -server $DOMAIN:$CLIENT_PORT <<EOF
 addauth digest $ZK_SUPERUSER:$ZK_SUPERPASS
 reconfig -add $MY_ID=$NAME-$ORD.$DOMAIN:$SERVER_PORT:$ELECTION_PORT:participant;$CLIENT_PORT
 quit
 EOF
-    if [ $? -eq "0" ]; then
+
+if [ $? -eq "0" ]; then
 	echo "Done"
-	break
-    fi
-    echo "Connection broken"
-    echo "Trying again..."
-    sleep 1
-    /opt/zookeeper/bin/zkCli.sh -server $NAME-$ID.$DOMAIN:$CLIENT_PORT <<EOF
+	exit 0
+fi
+
+echo "Connection broken"
+echo "Trying again..."
+sleep 1
+
+/opt/zookeeper/bin/zkCli.sh -server $DOMAIN:$CLIENT_PORT <<EOF
 addauth digest $ZK_SUPERUSER:$ZK_SUPERPASS
 reconfig -add $MY_ID=$NAME-$ORD.$DOMAIN:$SERVER_PORT:$ELECTION_PORT:participant;$CLIENT_PORT
 quit
 EOF
-    if [ $? -eq "0" ]; then
-	echo "Done"
-	break
-    fi
-done
+
+if [ $? -eq "0" ]; then
+    echo "Done"
+    exit 0
+fi

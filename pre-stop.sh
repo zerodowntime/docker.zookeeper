@@ -22,14 +22,14 @@ fi
 export MY_ID=$((ORD+1))
 
 # the meat: remove server from cluster
-for ((ID=0; ID<=MY_ID; ID++))
-do
-    /opt/zookeeper/bin/zkCli.sh -server $NAME-$ID.$DOMAIN:$CLIENT_PORT <<EOF
+/opt/zookeeper/bin/zkCli.sh -server $DOMAIN:$CLIENT_PORT <<EOF
 addauth digest $ZK_SUPERUSER:$ZK_SUPERPASS
 reconfig -remove $MY_ID
 quit
 EOF
-    if [ $? -eq "0" ]; then
-	break
-    fi
-done
+
+if [ $? -eq "0" ]; then
+    echo "Going dark."
+    exit 0
+fi
+
