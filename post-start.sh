@@ -9,6 +9,14 @@ export ELECTION_PORT=3888
 export ZK_SUPERUSER=$(cat /etc/zookeeper-super/username)
 export ZK_SUPERPASS=$(cat /etc/zookeeper-super/password)
 
+# check if service is up, if not it means this is the first pod to start
+if [[ $(dig +short "$DOMAIN") ]]; then
+    echo "There are other pods in service. Attempting to join."
+else
+    echo "I am the first pod to start. Skipping cluster insertion."
+    exit 0
+fi
+
 # cut hostname from stateful set into name and ordinal
 if [[ $HOST =~ (.*)-([0-9]+)$ ]]; then
     export NAME=${BASH_REMATCH[1]}
@@ -24,9 +32,6 @@ export MY_ID=$((ORD+1))
 # the meat: add server to the cluster
 # targeted for statefulset - try to add to ids lower than my own
 # prevents creating separate clusters
-echo "Checking if any pod is up..."
-curl "$DOMAIN:2181"
-
 echo "Trying $DOMAIN..."
 sleep 1
 

@@ -8,6 +8,8 @@ RUN curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -
 	&& chmod +x /usr/local/bin/jq \
 	&& yum install -y nc
 
+RUN yum -y install bind-utils
+
 ARG ZOOKEEPER_VERSION
 
 # Get zookeeper
