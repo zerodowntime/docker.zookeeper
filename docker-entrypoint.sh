@@ -22,6 +22,10 @@ export ZOOKEEPER_MAX_CLIENT_CNXNS=60
 export ZOOKEEPER_SNAP_RETAIN_COUNT=3
 export ZOOKEEPER_PURGE_INTERVAL=0
 
+# create dirs in volume
+mkdir -p "$DATA_DIR"
+mkdir -p "$DATA_LOG_DIR"
+
 # set ownership
 chown -R zookeeper:root /opt/zookeeper/
 chown -R zookeeper:root /var/lib/zookeeper/
