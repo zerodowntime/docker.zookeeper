@@ -99,8 +99,8 @@ spec:
       serviceAccountName: zookeeper
       containers:
       - name: kubernetes-zookeeper
-        imagePullPolicy: Never
-        image: "zerodowntime/zookeeper"
+        imagePullPolicy: Always
+        image: "zerodowntime/zookeeper:3.5.6"
         resources:
           requests:
             memory: "100Mi"
@@ -150,6 +150,7 @@ spec:
   - metadata:
       name: datadir
     spec:
+      storageClassName: zookeeper-data-storage
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:

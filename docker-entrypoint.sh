@@ -44,19 +44,21 @@ export MY_ID=$((ORD+1))
 ID_FILE="$DATA_DIR/myid"
 echo $MY_ID >> $ID_FILE
 
-# get number of servers
-METADATA_NAMESPACE=$(cat /run/secrets/kubernetes.io/serviceaccount/namespace)
-BEARER_TOKEN=$(cat /run/secrets/kubernetes.io/serviceaccount/token)
-STATEFULSET_NAME="${HOSTNAME%-*}"
-POD_ORDINAL="${HOSTNAME##*-}"
+if [ -d /run/secrets/kubernetes.io/serviceaccount ]; then
+  # get number of servers
+  METADATA_NAMESPACE=$(cat /run/secrets/kubernetes.io/serviceaccount/namespace)
+  BEARER_TOKEN=$(cat /run/secrets/kubernetes.io/serviceaccount/token)
+  STATEFULSET_NAME="${HOSTNAME%-*}"
+  POD_ORDINAL="${HOSTNAME##*-}"
 
-JSONFILE="$(mktemp)"
-curl -s -o "$JSONFILE" \
-     --cacert "/run/secrets/kubernetes.io/serviceaccount/ca.crt" \
-     --header "Authorization: Bearer $BEARER_TOKEN" \
-     "https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT/apis/apps/v1/namespaces/$METADATA_NAMESPACE/statefulsets/$STATEFULSET_NAME"
+  JSONFILE="$(mktemp)"
+  curl -s -o "$JSONFILE" \
+       --cacert "/run/secrets/kubernetes.io/serviceaccount/ca.crt" \
+       --header "Authorization: Bearer $BEARER_TOKEN" \
+       "https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT/apis/apps/v1/namespaces/$METADATA_NAMESPACE/statefulsets/$STATEFULSET_NAME"
 
-#export SERVERS=$(cat $JSONFILE | jq '.spec.replicas')
+  export SERVERS=$(jq '.spec.replicas' "$JSONFILE")
+fi
 
 re='^[0-9]+$'
 if ! [[ $SERVERS =~ $re ]] ; then
