@@ -65,6 +65,12 @@ echo $SERVERS
 confd -onetime -log-level debug || exit 1
 cat /opt/zookeeper/conf/zoo.cfg
 
+if [ ! -d /etc/zookeeper-super ]; then
+  mkdir /etc/zookeeper-super
+  echo "admin" > /etc/zookeeper-super/username
+  echo "p@ss!" > /etc/zookeeper-super/password
+fi
+
 # create password for superuser
 SUPER_CRED=$(java -cp "/opt/zookeeper/*:/opt/zookeeper/lib/*" org.apache.zookeeper.server.auth.DigestAuthenticationProvider $(cat /etc/zookeeper-super/username):$(cat /etc/zookeeper-super/password) \
      | awk 'BEGIN{ FS="->" } { print $2}')
